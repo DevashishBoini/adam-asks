@@ -1,0 +1,33 @@
+{
+  "name": "mini-github-copilot",
+  "displayName": "Mini GitHub Copilot",
+  "description": "VS Code extension for semantic code search and explanation.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": ">=1.80.0"
+  },
+  "categories": ["Other"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mini-github-copilot.askCode",
+        "title": "Mini GitHub Copilot: Ask Code",
+        "category": "Mini GitHub Copilot"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
