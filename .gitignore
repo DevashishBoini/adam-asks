@@ -1,3 +1,5 @@
+build/*.so
+repo_metadatas_dir/
 # Python
 __pycache__/
 *.pyc
@@ -21,3 +23,4 @@ backend/cloned_repos/
 # Node/TypeScript
 node_modules/
 dist/
+tree-sitter-languages/

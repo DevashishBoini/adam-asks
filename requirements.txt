@@ -3,6 +3,10 @@ httpx==0.27.0
 faiss-cpu==1.8.0
 asyncio==3.4.3
 tree-sitter==0.20.4
+tree-sitter-languages==1.10.2
 pydantic==2.7.1
 uvicorn==0.27.0
 python-dotenv==1.0.0
+
+## in scanner.c, temporarity comment out     // static_assert(MAX_DELIMITER_LENGTH * sizeof(wchar_t) < TREE_SITTER_SERIALIZATION_BUFFER_SIZE,
+##  //               "Serialized delimiter is too long!");
