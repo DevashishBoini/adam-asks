@@ -15,6 +15,9 @@ myenv/
 # FAISS index
 faiss_index.bin
 
+# Cloned repositories
+backend/cloned_repos/
+
 # Node/TypeScript
 node_modules/
 dist/
