@@ -23,7 +23,12 @@ class RepositoryService:
         backend_dir = os.path.dirname(os.path.abspath(__file__))
         self.clone_base_dir = os.path.join(backend_dir, "cloned_repos")
         os.makedirs(self.clone_base_dir, exist_ok=True)
-    
+
+        # Load GitHub token from environment variable
+        github_token = os.getenv("GITHUB_TOKEN")
+        if github_token:
+            self.github_token = github_token
+
     def validate_github_url(self, repo_url: str) -> Dict[str, str]:
         """
         Validate GitHub URL format and extract owner/repo name.
@@ -93,13 +98,18 @@ class RepositoryService:
         
         try:
             async with httpx.AsyncClient(timeout=300.0, follow_redirects=True) as client:
+                # Add Authorization header if token is set
+                headers = {}
+                if self.github_token:
+                    headers["Authorization"] = f"token {self.github_token}"
+                
                 # Download repository as ZIP
-                response = await client.get(api_url)
+                response = await client.get(api_url, headers=headers)
                 
                 if response.status_code == 404:
-                    raise RepositoryError("Repository not found or is private")
+                    raise RepositoryError(f"Repository not found or is private status code-{response.status_code} ")
                 elif response.status_code == 403:
-                    raise RepositoryError("Repository access forbidden (likely private)")
+                    raise RepositoryError(f"Repository access forbidden (likely private) status code-{response.status_code}")
                 elif response.status_code != 200:
                     raise RepositoryError(f"GitHub API error: {response.status_code}")
                 

@@ -7,6 +7,7 @@ from typing import List, Dict
 import pprint
 import os
 import json
+import re
 
 # Ensure the script uses pre-built shared libraries for Tree-sitter languages.
 LANGUAGES = {
@@ -74,9 +75,11 @@ class FunctionExtractor:
                 if child.type == "expression_statement" and child.child_count > 0:
                     expr_child = child.children[0]
                     if expr_child.type == "string":
-                        return expr_child.text.decode("utf8").strip('"\'')
+                        text=expr_child.text.decode("utf8").strip('"\'')
+                        return re.sub(r"\s+", " ", text).strip()
                 if child.type == "string":
-                    return child.text.decode("utf8").strip('"\'')
+                    text=child.text.decode("utf8").strip('"\'')
+                    return re.sub(r"\s+", " ", text).strip()
         return None
 
     @staticmethod
@@ -135,8 +138,15 @@ class FunctionExtractor:
         return params
 
     @staticmethod
+    def extract_name(node: Any) -> str:
+        name_node = node.child_by_field_name("name")
+        if name_node:
+            return name_node.text.decode("utf8")
+        return ""
+
+    @staticmethod
     def extract(node: Any) -> dict:
-        name = node.child_by_field_name("name").text.decode("utf8")
+        name = FunctionExtractor.extract_name(node)
         return {
             "name": name,
             "type": "function",
@@ -304,7 +314,11 @@ class ClassExtractor:
         if block:
             for child in block.children:
                 if child.type == "function_definition":
-                    methods.append(FunctionExtractor.extract(child))
+                    method_metadata = {
+                        "name": FunctionExtractor.extract_name(child),
+                        "docstring": FunctionExtractor.extract_docstring(child)
+                    }
+                    methods.append(method_metadata)
         return methods
 
     @staticmethod
