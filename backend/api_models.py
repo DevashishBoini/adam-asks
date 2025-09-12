@@ -9,8 +9,7 @@ class IndexRepositoryRequest(BaseModel):
     """Request model for repository indexing."""
     repo_url: str = Field(
         ...,
-        description="GitHub repository URL (https://github.com/owner/repo)",
-        example="https://github.com/octocat/Hello-World"
+        description="GitHub repository URL (https://github.com/owner/repo)"
     )
     
     class Config:
