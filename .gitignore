@@ -1,5 +1,8 @@
 build/*.so
 repo_metadatas_dir/
+repo_chunks_dir/
+logs/
+
 # Python
 __pycache__/
 *.pyc

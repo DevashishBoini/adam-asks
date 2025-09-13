@@ -2,17 +2,23 @@
 API Helpers - Phase 1, Step 1
 Contains all business logic for FastAPI endpoints and common utilities.
 """
+import os
 from typing import Dict, Any
 from fastapi import HTTPException
 
 from repository_service import RepositoryService, RepositoryError
 from api_models import RepositoryInfo
+from chunk_orchestrator import ChunkOrchestrator
+from logger import logger
+
+filename = os.path.basename(__file__)
 
 class APIHelpers:
     """Contains helper functions for all API endpoints."""
     
     def __init__(self):
         self.repo_service = RepositoryService()
+        logger.info(f"[{filename}] APIHelpers initialized.")
     
     @staticmethod
     def handle_repository_error(e: RepositoryError) -> HTTPException:
@@ -27,6 +33,7 @@ class APIHelpers:
             HTTPException with appropriate status code and error details
         """
         error_msg = str(e)
+        logger.error(f"[{filename}] RepositoryError handled: {error_msg}")
         
         # Map specific errors to HTTP status codes
         if "not found" in error_msg.lower() or "private" in error_msg.lower():
@@ -66,6 +73,7 @@ class APIHelpers:
         Returns:
             HTTPException with 500 status code
         """
+        logger.error(f"[{filename}] Unexpected error handled: {str(e)}")
         return HTTPException(
             status_code=500,
             detail={
@@ -81,35 +89,58 @@ class APIHelpers:
         
         Args:
             repo_url: GitHub repository URL
-            
+        
         Returns:
             Dictionary containing repository information and status
-            
-        Raises:
-            RepositoryError: For repository-related errors
         """
-        # Download repository
-        result = await self.repo_service.download_repository(repo_url)
-        
-        # Create repository info
-        repo_info = RepositoryInfo(
-            owner=result["owner"],
-            repo=result["repo"],
-            local_path=result["local_path"],
-            total_files=result["total_files"],
-            status=result["status"]
-        )
-        
-        # TODO: Phase 1, Step 2 - Add AST extraction here
-        # TODO: Phase 1, Step 3 - Add metadata collection here
-        # TODO: Phase 1, Step 4 - Add embedding generation here
-        # TODO: Phase 1, Step 5 - Add FAISS storage here
-        
-        return {
-            "status": "success",
-            "message": f"Repository {result['owner']}/{result['repo']} downloaded successfully",
-            "repo_info": repo_info
-        }
+        logger.info(f"[{filename}] Starting repository indexing for: {repo_url}")
+        try:
+            # Download repository
+            result = await self.repo_service.download_repository(repo_url)
+            repo_info = RepositoryInfo(
+                owner=result["owner"],
+                repo=result["repo"],
+                local_path=result["local_path"],
+                total_files=result["total_files"],
+                status=result["status"]
+            )
+
+            # Phase 1, Step 2 & 3: AST extraction and metadata collection
+            from metadata_collector import MetadataCollector
+            repo_name = result["repo"]
+            metadata_collector = MetadataCollector(result["local_path"], repo_name)
+            file_metadatas = metadata_collector.collect_metadata_sequential()
+            metadata_path = metadata_collector.save_metadata(file_metadatas)
+
+            # Phase 1, Step 4: Chunking
+            
+            chunk_orchestrator = ChunkOrchestrator(result["local_path"], metadata_path, repo_name)
+            chunk_file_path = chunk_orchestrator.run()
+
+            # Phase 1, Step 5: Embedding Generation
+            from chunk_embedding_generator import ChunkEmbeddingGenerator
+            embedding_generator = ChunkEmbeddingGenerator(
+                chunk_file_path,
+                repo_name,
+                "repo_metadatas_dir"
+            )
+            embedding_generator.generate_embeddings()
+            embedding_file_path = embedding_generator.output_file
+
+            logger.info(f"Repository {result['owner']}/{result['repo']} downloaded and indexed successfully")
+            return {
+                "status": "success",
+                "message": f"Repository {result['owner']}/{result['repo']} downloaded and indexed successfully",
+                "repo_info": repo_info,
+                "metadata_path": metadata_path,
+                "file_metadatas": file_metadatas,
+                "chunk_file_path": chunk_file_path,
+                "embedding_file_path": embedding_file_path
+            }
+        except RepositoryError as e:
+            raise self.handle_repository_error(e)
+        except Exception as e:
+            raise self.handle_unexpected_error(e)
     
     # TODO: Add more helper functions for future endpoints
     # async def search_code_helper(self, query: str) -> Dict[str, Any]:

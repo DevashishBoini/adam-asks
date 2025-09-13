@@ -12,8 +12,9 @@ class MetadataCollector:
     """
     Collects and stores metadata for a repository. Stores the path to the saved metadata file as an attribute.
     """
-    def __init__(self, repo_path: str, output_dir: str = "repo_metadatas_dir"):
+    def __init__(self, repo_path: str, repo_name: str, output_dir: str = "repo_metadatas_dir"):
         self.repo_path = repo_path
+        self.repo_name = repo_name
         self.output_dir = output_dir
         self.metadata_path = None
 
@@ -39,12 +40,12 @@ class MetadataCollector:
 
     def save_metadata(self, metadata: List[Dict]):
         os.makedirs(self.output_dir, exist_ok=True)
-        repo_name = os.path.basename(os.path.normpath(self.repo_path))
-        output_file = os.path.join(self.output_dir, f"{repo_name}_metadata.json")
+        output_file = os.path.join(self.output_dir, f"{self.repo_name}_metadata.json")
         with open(output_file, "w") as f:
             json.dump(metadata, f, indent=4)
         self.metadata_path = output_file
         print(f"Metadata collected and saved to {output_file}")
+        return output_file
 
     def run(self):
         start_time = time.time()
@@ -58,8 +59,9 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Collect AST metadata for all supported files in a repository.")
     parser.add_argument("repo_path", type=str, help="Path to the repository to analyze.")
+    parser.add_argument("repo_name", type=str, help="Name of the repository.")
     args = parser.parse_args()
 
-    collector = MetadataCollector(args.repo_path)
+    collector = MetadataCollector(args.repo_path, args.repo_name)
     collector.run()
     # The path to the stored metadata file is now available as collector.metadata_path
