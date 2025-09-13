@@ -56,6 +56,7 @@ class ChunkEmbeddingGenerator:
     def generate_embeddings(self, batch_size: int = 100):
         batch_chunks: List[Chunk] = []
         batch_no = 1
+        total_chunks = len(self.chunks)
         for chunk in self.chunks:
             batch_chunks.append(chunk)
             if len(batch_chunks) == batch_size:
@@ -65,6 +66,10 @@ class ChunkEmbeddingGenerator:
         if batch_chunks:
             self._process_batch(batch_chunks, batch_no)
         self._save_embeddings()
+        # Count passed and failed
+        passed = sum(1 for emb in self.embeddings if emb["embedding"] is not None)
+        failed = total_chunks - passed
+        logger.info(f"[{filename}] Total chunks arrived: {total_chunks}, passed: {passed}, failed: {failed}")
 
     def _process_batch(self, batch_chunks: List[Chunk], batch_no: int):
         texts = [chunk.content for chunk in batch_chunks]
