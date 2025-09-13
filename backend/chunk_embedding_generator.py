@@ -23,7 +23,7 @@ class Chunk:
     metadata: Dict
 
 class ChunkEmbeddingGenerator:
-    def __init__(self, chunk_file_path: str, repo_name: str, output_dir: str = "repo_metadatas_dir", output_file: Optional[str] = None):
+    def __init__(self, chunk_file_path: str, repo_name: str, output_dir: str = "repo_embeddings_dir", output_file: Optional[str] = None):
         self.chunk_file_path = chunk_file_path
         self.repo_name = repo_name
         self.output_dir = output_dir
@@ -69,7 +69,7 @@ class ChunkEmbeddingGenerator:
     def _process_batch(self, batch_chunks: List[Chunk], batch_no: int):
         texts = [chunk.content for chunk in batch_chunks]
         embeddings = self._get_batch_embeddings(texts, batch_no=batch_no)
-        print(f"[LOG] OpenAI embedding API call successful for batch #{batch_no} of {len(texts)} chunks.")
+        logger.info(f"[[{filename}] OpenAI embedding API call successful for batch #{batch_no} of {len(texts)} chunks.")
         for chunk, embedding in zip(batch_chunks, embeddings):
             chunk_embedding = {
                 "content": chunk.content,
@@ -81,38 +81,58 @@ class ChunkEmbeddingGenerator:
     def _get_batch_embeddings(self, texts, batch_no=None):
 
         batch_info = f"batch #{batch_no}" if batch_no is not None else "batch"
-        # Use OpenAI API's batch input if available, else process sequentially
         try:
             logger.info(f"[{filename}] Attempting batch embedding for {len(texts)} texts in {batch_info}.")
             result = get_openai_embedding(texts)
             logger.info(f"[{filename}] Batch embedding succeeded for {len(texts)} texts in {batch_info}.")
             return result
         except Exception as e:
-            logger.error(f"[{filename}] Batch embedding failed for {len(texts)} texts in {batch_info}. Error: {e}")
-            # Fallback: process one by one
-            embeddings = []
-            for idx, text in enumerate(texts):
+            total_chars = sum(len(t) for t in texts)
+            logger.error(f"[{filename}] Batch embedding failed for {len(texts)} texts in {batch_info}. Error: {e}. Total chars in batch: {total_chars}")
+            # Recursive fallback: split batch and retry
+            if len(texts) > 1:
+                mid = len(texts) // 2
+                left = texts[:mid]
+                right = texts[mid:]
+                logger.info(f"[{filename}] Splitting batch of {len(texts)} into two sub-batches: {len(left)} and {len(right)}.")
                 try:
-                    logger.info(f"[{filename}] Attempting single embedding for text #{idx+1} in {batch_info}.")
-                    embedding = get_openai_embedding(text)
-                    logger.info(f"[{filename}] Single embedding succeeded for text #{idx+1} in {batch_info}.")
-                    embeddings.append(embedding)
-                except Exception as single_e:
-                    logger.error(f"[{filename}] Single embedding failed for text #{idx+1} in {batch_info}. Error: {single_e}")
-                    embeddings.append(None)
-            return embeddings
+                    left_embeddings = self._get_batch_embeddings(left, batch_no=batch_no)
+                    logger.info(f"[{filename}] Sub-batch embedding succeeded for left sub-batch of {len(left)} texts in {batch_info}.")
+                except Exception as left_e:
+                    logger.error(f"[{filename}] Sub-batch embedding failed for left sub-batch of {len(left)} texts in {batch_info}. Error: {left_e}")
+                    left_embeddings = [None] * len(left)
+                try:
+                    right_embeddings = self._get_batch_embeddings(right, batch_no=batch_no)
+                    logger.info(f"[{filename}] Sub-batch embedding succeeded for right sub-batch of {len(right)} texts in {batch_info}.")
+                except Exception as right_e:
+                    logger.error(f"[{filename}] Sub-batch embedding failed for right sub-batch of {len(right)} texts in {batch_info}. Error: {right_e}")
+                    right_embeddings = [None] * len(right)
+                return left_embeddings + right_embeddings
+            else:
+                # Fallback: process single
+                embeddings = []
+                for idx, text in enumerate(texts):
+                    try:
+                        logger.info(f"[{filename}] Attempting single embedding for text #{idx+1} in {batch_info}.")
+                        embedding = get_openai_embedding(text)
+                        logger.info(f"[{filename}] Single embedding succeeded for text #{idx+1} in {batch_info}.")
+                        embeddings.append(embedding)
+                    except Exception as single_e:
+                        logger.error(f"[{filename}] Single embedding failed for text #{idx+1} in {batch_info}. Error: {single_e} . Total chars in batch: {total_chars}")
+                        embeddings.append(None)
+                return embeddings
 
     def _save_embeddings(self):
         with open(self.output_file, "w") as f:
             json.dump(self.embeddings, f, indent=4)
-        print(f"Embeddings saved to {self.output_file}")
+        logger.info(f"Embeddings saved to {self.output_file}")
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Generate embeddings for chunk texts using OpenAI API.")
     parser.add_argument("chunk_file_path", type=str, help="Path to the chunk file.")
     parser.add_argument("repo_name", type=str, help="Name of the repository.")
-    parser.add_argument("--output_dir", type=str, default="repo_metadatas_dir", help="Directory to save the embeddings file.")
+    parser.add_argument("--output_dir", type=str, default="repo_embeddings_dir", help="Directory to save the embeddings file.")
     parser.add_argument("--output_file", type=str, default=None, help="Path to save the embeddings file.")
     args = parser.parse_args()
 

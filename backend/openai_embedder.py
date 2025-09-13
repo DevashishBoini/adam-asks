@@ -44,11 +44,11 @@ def get_openai_embedding(text: Union[str, List[str]]):
         raise
     resp_json = response.json()
     # If batch, return list of embeddings
-    logger.info(type(text))
+    # logger.info(f"[{filename}] Input type: {type(text)}")
     if isinstance(text, list):
         logger.info(f"[{filename}] Batch embedding generation for {len(text)} texts ")
         embeddings = [item["embedding"] for item in resp_json["data"]]
-        logger.info(f"Embedding dimension of 1st text in batch: {len(embeddings[0])}")
+        logger.info(f"[{filename}] Embedding dimension of 1st text in batch: {len(embeddings[0])}")
         return embeddings
     # If single string, return single embedding
     logger.info(f"[{filename}] Single embedding generation")

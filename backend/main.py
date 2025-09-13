@@ -65,7 +65,7 @@ async def index_repository(request: IndexRepositoryRequest):
     try:
         # Use API helpers to handle the business logic
         result = await api_helpers.index_repository_helper(request.repo_url)
-        logger.info(f"[{filename}] Indexing successful for {request.repo_url}: {result}")
+        logger.info(f"[{filename}] Indexing successful for {request.repo_url}")
         return IndexRepositoryResponse(
             status=result["status"],
             message=result["message"],

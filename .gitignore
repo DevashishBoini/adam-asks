@@ -1,8 +1,8 @@
-build/*.so
 repo_metadatas_dir/
 repo_chunks_dir/
-logs/
+repo_embeddings_dir/
 
+logs/
 build/ 
 test_suites/
 

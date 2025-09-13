@@ -10,7 +10,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.path.join(LOG_DIR, "backend_api.log")
 
 # Clean the log file on server start
-with open(LOG_FILE, "w") as f:
+with open(LOG_FILE, "a") as f:
     pass
 
 logging.basicConfig(

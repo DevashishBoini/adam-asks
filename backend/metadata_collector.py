@@ -7,6 +7,8 @@ from repo_traversal import traverse_repo
 from ast_extractor import ASTExtractor
 import concurrent.futures
 import time
+from logger import logger
+filename = os.path.basename(__file__)
 
 class MetadataCollector:
     """
@@ -26,7 +28,7 @@ class MetadataCollector:
                 extractor = ASTExtractor(file_path, language)
                 return extractor.extract()
             except Exception as e:
-                print(f"Error processing {file_path}: {e}")
+                logger.error(f"Error processing {file_path}: {e}")
         return None
 
     def collect_metadata_sequential(self) -> List[Dict]:
@@ -44,14 +46,14 @@ class MetadataCollector:
         with open(output_file, "w") as f:
             json.dump(metadata, f, indent=4)
         self.metadata_path = output_file
-        print(f"Metadata collected and saved to {output_file}")
+        logger.info(f"[{filename}] Metadata collected and saved to {output_file}")
         return output_file
 
     def run(self):
         start_time = time.time()
         metadata = self.collect_metadata_sequential()
         elapsed = time.time() - start_time
-        print(f"Sequential processing time: {elapsed:.2f} seconds")
+        logger.info(f"Sequential processing time: {elapsed:.2f} seconds")
         self.save_metadata(metadata)
 
 

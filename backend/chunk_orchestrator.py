@@ -11,6 +11,8 @@ import json
 from typing import List, Dict, Any
 from metadata_collector import MetadataCollector
 from chunk_generator import ChunkGenerator
+from logger import logger
+filename = os.path.basename(__file__)
 
 class ChunkOrchestrator:
     def __init__(self, repo_path: str, metadata_path: str, repo_name: str):
@@ -46,7 +48,7 @@ class ChunkOrchestrator:
             chunk_gen = ChunkGenerator(file_path, entities)
             file_chunks = chunk_gen.generate_chunks()
             self.chunks.extend(file_chunks)
-        print(f"[LOG] Total chunks generated: {len(self.chunks)}")
+        logger.info(f"[{filename}] Total chunks generated: {len(self.chunks)}")
         return self.chunks
 
     def save_chunks(self, output_dir: str = "repo_chunks_dir"):
@@ -54,7 +56,7 @@ class ChunkOrchestrator:
         output_file = os.path.join(output_dir, f"{self.repo_name}_chunks.json")
         with open(output_file, "w") as f:
             json.dump(self.chunks, f, indent=4)
-        print(f"All chunks saved to {output_file}")
+        logger.info(f"[{filename}] All chunks saved to {output_file}")
         self.chunk_file_path = output_file
         return output_file
 

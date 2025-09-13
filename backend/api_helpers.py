@@ -122,7 +122,6 @@ class APIHelpers:
             embedding_generator = ChunkEmbeddingGenerator(
                 chunk_file_path,
                 repo_name,
-                "repo_metadatas_dir"
             )
             embedding_generator.generate_embeddings()
             embedding_file_path = embedding_generator.output_file
