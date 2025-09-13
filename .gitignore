@@ -3,6 +3,9 @@ repo_metadatas_dir/
 repo_chunks_dir/
 logs/
 
+build/ 
+test_suites/
+
 # Python
 __pycache__/
 *.pyc
