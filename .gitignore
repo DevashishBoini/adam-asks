@@ -1,6 +1,7 @@
 repo_metadatas_dir/
 repo_chunks_dir/
 repo_embeddings_dir/
+repo_faiss_index_dir/
 
 logs/
 build/ 

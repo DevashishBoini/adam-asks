@@ -10,6 +10,7 @@ from repository_service import RepositoryService, RepositoryError
 from api_models import RepositoryInfo
 from chunk_orchestrator import ChunkOrchestrator
 from logger import logger
+from faiss_indexer import FAISSIndexer
 
 filename = os.path.basename(__file__)
 
@@ -126,7 +127,20 @@ class APIHelpers:
             embedding_generator.generate_embeddings()
             embedding_file_path = embedding_generator.output_file
 
-            logger.info(f"Repository {result['owner']}/{result['repo']} downloaded and indexed successfully")
+            # # Phase 1, Step 6: FAISS Indexing
+            
+            # faiss_indexer = FAISSIndexer(embedding_file=embedding_file_path, repo_name=repo_name)
+
+            # # Load data and create FAISS index
+            # texts, embeddings, metadatas = faiss_indexer.load_data()
+            # faiss_indexer.create_index(texts, embeddings, metadatas)
+
+            # # Save the FAISS index to disk
+            # faiss_indexer.save_index()
+
+            logger.info(f"[{filename}] FAISS index created and saved successfully.")
+
+            logger.info(f"[{filename}]Repository {result['owner']}/{result['repo']} downloaded and indexed successfully")
             return {
                 "status": "success",
                 "message": f"Repository {result['owner']}/{result['repo']} downloaded and indexed successfully",

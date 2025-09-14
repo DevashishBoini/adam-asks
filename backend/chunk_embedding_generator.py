@@ -130,7 +130,7 @@ class ChunkEmbeddingGenerator:
     def _save_embeddings(self):
         with open(self.output_file, "w") as f:
             json.dump(self.embeddings, f, indent=4)
-        logger.info(f"Embeddings saved to {self.output_file}")
+        logger.info(f"[{filename}] Embeddings saved to {self.output_file}")
 
 if __name__ == "__main__":
     import argparse

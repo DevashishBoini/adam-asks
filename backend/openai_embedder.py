@@ -24,6 +24,7 @@ def get_openai_embedding(text: Union[str, List[str]]):
     if not OPENAI_API_KEY:
         logger.error(f"[{filename}] OPENAI_API_KEY is not set in the environment.")
         raise ValueError("OPENAI_API_KEY is not set in the environment.")
+    logger.info(f"[{filename}] Generating embedding using model: {OPENAI_EMBEDDING_MODEL}")
     url = "https://api.openai.com/v1/embeddings"
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
