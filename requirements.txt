@@ -12,6 +12,7 @@ requests==2.32.5
 pydantic_core==2.33.2
 numpy==1.26.4
 faiss-cpu==1.8.0
+google-generativeai==0.8.3
 
 
 ## in scanner.c, temporarity comment out     // static_assert(MAX_DELIMITER_LENGTH * sizeof(wchar_t) < TREE_SITTER_SERIALIZATION_BUFFER_SIZE,

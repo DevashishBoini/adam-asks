@@ -18,6 +18,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
+OPENAI_API_URL = os.getenv("OPENAI_API_URL", "https://api.openai.com/v1/embeddings")
 
 
 def get_openai_embedding(text: Union[str, List[str]]):
@@ -25,7 +26,6 @@ def get_openai_embedding(text: Union[str, List[str]]):
         logger.error(f"[{filename}] OPENAI_API_KEY is not set in the environment.")
         raise ValueError("OPENAI_API_KEY is not set in the environment.")
     logger.info(f"[{filename}] Generating embedding using model: {OPENAI_EMBEDDING_MODEL}")
-    url = "https://api.openai.com/v1/embeddings"
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
         "Content-Type": "application/json"
@@ -35,7 +35,7 @@ def get_openai_embedding(text: Union[str, List[str]]):
         "model": OPENAI_EMBEDDING_MODEL
     }
     try:
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(OPENAI_API_URL, headers=headers, json=data)
         response.raise_for_status()
     except requests.exceptions.HTTPError as http_err:
         # logger.error(f"[{filename}] OpenAI API HTTP error: {http_err}, Response: {response.text}")
