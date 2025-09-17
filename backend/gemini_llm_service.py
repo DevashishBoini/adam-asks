@@ -9,7 +9,6 @@ and code explanation. Uses Gemini 2.5 Flash model.
 
 import os
 import google.generativeai as genai
-from typing import List, Optional
 from logger import logger
 from dotenv import load_dotenv
 

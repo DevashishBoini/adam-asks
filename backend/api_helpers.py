@@ -110,8 +110,14 @@ class APIHelpers:
             from metadata_collector import MetadataCollector
             repo_name = result["repo"]
             metadata_collector = MetadataCollector(result["local_path"], repo_name)
-            file_metadatas = metadata_collector.collect_metadata_sequential()
+            metadata_response = metadata_collector.collect_metadata_sequential()
+            file_metadatas = metadata_response.get("metadata", [])
+            readme_content = metadata_response.get("readme_content", "")
+            repo_structure = metadata_response.get("repo_structure", {})
+
             metadata_path = metadata_collector.save_metadata(file_metadatas)
+            readme_path = metadata_collector.save_readme_content(readme_content)
+            repo_structure_path = metadata_collector.save_repo_structure(repo_structure)
 
             # Phase 1, Step 4: Chunking
             
