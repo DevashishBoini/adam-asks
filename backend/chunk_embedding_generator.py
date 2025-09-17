@@ -23,10 +23,11 @@ class Chunk:
     metadata: Dict
 
 class ChunkEmbeddingGenerator:
-    def __init__(self, chunk_file_path: str, repo_name: str, output_dir: str = "repo_embeddings_dir", output_file: Optional[str] = None):
+    def __init__(self, chunk_file_path: str, repo_name: str, output_dir: str = "repo_embeddings_dir", output_file: Optional[str] = None, expected_embedding_dim: int = 1536):
         self.chunk_file_path = chunk_file_path
         self.repo_name = repo_name
         self.output_dir = output_dir
+        self.expected_embedding_dim = expected_embedding_dim
         os.makedirs(self.output_dir, exist_ok=True)
         if output_file is None:
             self.output_file = os.path.join(self.output_dir, f"{self.repo_name}_embeddings.json")
@@ -76,12 +77,15 @@ class ChunkEmbeddingGenerator:
         embeddings = self._get_batch_embeddings(texts, batch_no=batch_no)
         logger.info(f"[[{filename}] OpenAI embedding API call successful for batch #{batch_no} of {len(texts)} chunks.")
         for chunk, embedding in zip(batch_chunks, embeddings):
-            chunk_embedding = {
-                "content": chunk.content,
-                "metadata": chunk.metadata,
-                "embedding": embedding
-            }
-            self.embeddings.append(chunk_embedding)
+            if embedding is not None and len(embedding) == self.expected_embedding_dim:
+                chunk_embedding = {
+                    "content": chunk.content,
+                    "metadata": chunk.metadata,
+                    "embedding": embedding
+                }
+                self.embeddings.append(chunk_embedding)
+            else:
+                logger.warning(f"[{filename}] Skipping chunk due to invalid embedding dimensions: {len(embedding) if embedding else 'None'} instead of {self.expected_embedding_dim}")
 
     def _get_batch_embeddings(self, texts, batch_no=None):
 

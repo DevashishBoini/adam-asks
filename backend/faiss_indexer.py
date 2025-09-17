@@ -10,7 +10,7 @@ from pprint import pprint
 filename = os.path.basename(__file__)
 
 class FAISSIndexer:
-    def __init__(self, embedding_file, repo_name: str, embedder=get_openai_embedding, distance_strategy : str ="fssds"):
+    def __init__(self, embedding_file: str, repo_name: str, embedder=get_openai_embedding, distance_strategy : str ="fssds"):
         """
         Initialize the FAISSIndexer.
 
@@ -78,7 +78,7 @@ class FAISSIndexer:
         :param output_dir: Directory to save the FAISS index file.
         """
         os.makedirs(output_dir, exist_ok=True)
-        file_path = os.path.join(output_dir, f"{self.repo_name}_chunks.json")
+        file_path = os.path.join(output_dir, f"{self.repo_name}_index.json")
         logger.info(f"[{filename}] Saving FAISS index to {file_path}.")
         self.vector_store.save_local(file_path)
         logger.info(f"[{filename}] FAISS index saved successfully at {file_path}.")
@@ -94,6 +94,7 @@ class FAISSIndexer:
         logger.info(f"[{filename}] Loading FAISS index from {file_path}.")
         self.vector_store = FAISS.load_local(file_path, self.embedder, allow_dangerous_deserialization=True)
         logger.info(f"[{filename}] FAISS index loaded successfully at {file_path}.")
+        return self.vector_store
 
     def search(self, query, k=5):
         """

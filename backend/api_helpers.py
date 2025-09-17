@@ -7,6 +7,7 @@ from typing import Dict, Any
 from fastapi import HTTPException
 
 from repository_service import RepositoryService, RepositoryError
+from metadata_collector import MetadataCollector
 from api_models import RepositoryInfo
 from chunk_orchestrator import ChunkOrchestrator
 from logger import logger
@@ -107,7 +108,7 @@ class APIHelpers:
             )
 
             # Phase 1, Step 2 & 3: AST extraction and metadata collection
-            from metadata_collector import MetadataCollector
+            
             repo_name = result["repo"]
             metadata_collector = MetadataCollector(result["local_path"], repo_name)
             metadata_response = metadata_collector.collect_metadata_sequential()
