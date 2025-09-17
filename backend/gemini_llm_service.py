@@ -11,6 +11,7 @@ import os
 import google.generativeai as genai
 from logger import logger
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -40,6 +41,8 @@ class GeminiLLMService:
         # Configure the API
         genai.configure(api_key=self.gemini_api_key)
 
+        logger.info(f"[{filename}] GeminiLLMService initialized with model: {self.gemini_model_flash}")
+
 
     def get_response(self, query: str, temperature: float = 0.7, final_model: bool = False) -> str:
         """
@@ -56,10 +59,19 @@ class GeminiLLMService:
         """
         try:
             model_name = self.gemini_model_pro if final_model else self.gemini_model_flash
+            logger.info(f"[{filename}] Using model: {model_name} with temperature: {temperature}")
 
-            model = genai.GenerativeModel(model_name, generation_config={"temperature": temperature})
-            response = model.generate_content(query
-            )
+            model = genai.GenerativeModel(model_name, generation_config={"temperature": temperature, "response_mime_type": "application/json"})
+
+            # Start timer
+            start_time = time.time()
+
+            response = model.generate_content(query)
+
+            # End timer and log time taken
+            time_taken = time.time() - start_time
+            logger.info(f"[{filename}] Time taken for API call: {time_taken:.2f} seconds")
+
             logger.info(f"[{filename}] Gemini API call successful for model: {model_name}")
             return response.text
         except Exception as e:
@@ -74,8 +86,6 @@ if __name__ == "__main__":
     parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for response generation.")
     parser.add_argument("--final_model", action="store_true", help="Use final model if available.")
     args = parser.parse_args()
-
-    model_name = "gemini-2.0-flash-exp" if args.final_model else None  # Placeholder; update to 2.5 when available
     
     try:
         service = GeminiLLMService()

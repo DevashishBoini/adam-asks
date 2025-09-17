@@ -47,7 +47,7 @@ class MetadataCollector:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
                 if content:  # Only include non-empty files
-                    return f"{content}\n====\n{file_path}"
+                    return f"file path-{file_path}\ncontent-{content}"
         except Exception as e:
             logger.warning(f"[{filename}] Failed to read README file {file_path}: {e}")
         return None
@@ -83,7 +83,7 @@ class MetadataCollector:
                 if result:
                     metadata.append(result)
         
-        readme_content = "\n\n".join(readme_contents) if readme_contents else ""
+        readme_content = "\n==============\n".join(readme_contents) if readme_contents else ""
         return {
             'metadata': metadata,
             'readme_content': readme_content,

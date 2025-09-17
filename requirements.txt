@@ -14,6 +14,11 @@ numpy==1.26.4
 faiss-cpu==1.8.0
 google-generativeai==0.8.3
 
+## execute pip install -r requirements.txt
+
+
+## also later execute clone_tree_sitter_languages.sh to clone the tree-sitter-languages repo
+
 
 ## in scanner.c, temporarity comment out     // static_assert(MAX_DELIMITER_LENGTH * sizeof(wchar_t) < TREE_SITTER_SERIALIZATION_BUFFER_SIZE,
 ##  //               "Serialized delimiter is too long!");
